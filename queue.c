@@ -4,6 +4,7 @@
 
 #include "harness.h"
 #include "queue.h"
+#include "strnatcmp.h"
 
 /*
  * Create empty queue.
@@ -296,8 +297,8 @@ list_ele_t *merge(list_ele_t *left, list_ele_t *right)
 
     // Initialize, compare left and right list's first node's value
     // string length, point result to the node with shorter string length
-    // determined by strcasecmp().
-    if (strcasecmp(left->value, right->value) < 1) {
+    // determined by strnatcasecmp().
+    if (strnatcasecmp(left->value, right->value) < 1) {
         result = cur = left;
         left = left->next;
     } else {
@@ -306,7 +307,7 @@ list_ele_t *merge(list_ele_t *left, list_ele_t *right)
     }
 
     while (left && right) {
-        if (strcasecmp(left->value, right->value) < 1) {
+        if (strnatcasecmp(left->value, right->value) < 1) {
             cur->next = left;
             left = left->next;
         } else {
