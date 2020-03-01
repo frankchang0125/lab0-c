@@ -12,15 +12,34 @@
 queue_t *q_new()
 {
     queue_t *q = malloc(sizeof(queue_t));
-    /* TODO: What if malloc returned NULL? */
+
+    if (!q) {
+        return NULL;
+    }
+
     q->head = NULL;
+    q->tail = NULL;
+    q->size = 0;
+
     return q;
 }
 
 /* Free all storage used by queue */
 void q_free(queue_t *q)
 {
-    /* TODO: How about freeing the list elements and the strings? */
+    if (!q) {
+        return;
+    }
+
+    list_ele_t *cur = q->head;
+
+    while (cur) {
+        list_ele_t *node = cur;
+        cur = cur->next;
+        free(node->value);
+        free(node);
+    }
+
     /* Free queue structure */
     free(q);
 }
@@ -34,13 +53,25 @@ void q_free(queue_t *q)
  */
 bool q_insert_head(queue_t *q, char *s)
 {
-    list_ele_t *newh;
-    /* TODO: What should you do if the q is NULL? */
-    newh = malloc(sizeof(list_ele_t));
-    /* Don't forget to allocate space for the string and copy it */
-    /* What if either call to malloc returns NULL? */
-    newh->next = q->head;
-    q->head = newh;
+    if (!q) {
+        return false;
+    }
+
+    list_ele_t *node = q_allocate_node(s);
+
+    if (!node) {
+        return false;
+    }
+
+    node->next = q->head;
+    q->head = node;
+
+    if (!q->tail) {
+        q->tail = node;
+    }
+
+    q->size += 1;
+
     return true;
 }
 
@@ -53,10 +84,28 @@ bool q_insert_head(queue_t *q, char *s)
  */
 bool q_insert_tail(queue_t *q, char *s)
 {
-    /* TODO: You need to write the complete code for this function */
-    /* Remember: It should operate in O(1) time */
-    /* TODO: Remove the above comment when you are about to implement. */
-    return false;
+    if (!q) {
+        return false;
+    }
+
+    list_ele_t *node = q_allocate_node(s);
+
+    if (!node) {
+        return false;
+    }
+
+    if (!q->head) {
+        q->head = node;
+    }
+
+    if (q->tail) {
+        q->tail->next = node;
+    }
+
+    q->tail = node;
+    q->size += 1;
+
+    return true;
 }
 
 /*
@@ -69,9 +118,26 @@ bool q_insert_tail(queue_t *q, char *s)
  */
 bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
 {
-    /* TODO: You need to fix up this code. */
-    /* TODO: Remove the above comment when you are about to implement. */
+    if (!q || !q->head) {
+        return false;
+    }
+
+    list_ele_t *head = q->head;
     q->head = q->head->next;
+
+    if (q->tail == head) {
+        q->tail = NULL;
+    }
+
+    if (sp) {
+        strncpy(sp, head->value, bufsize - 1);
+        sp[bufsize - 1] = '\0';
+    }
+
+    free(head->value);
+    free(head);
+    q->size -= 1;
+
     return true;
 }
 
@@ -81,10 +147,10 @@ bool q_remove_head(queue_t *q, char *sp, size_t bufsize)
  */
 int q_size(queue_t *q)
 {
-    /* TODO: You need to write the code for this function */
-    /* Remember: It should operate in O(1) time */
-    /* TODO: Remove the above comment when you are about to implement. */
-    return 0;
+    if (!q) {
+        return 0;
+    }
+    return q->size;
 }
 
 /*
@@ -96,8 +162,24 @@ int q_size(queue_t *q)
  */
 void q_reverse(queue_t *q)
 {
-    /* TODO: You need to write the code for this function */
-    /* TODO: Remove the above comment when you are about to implement. */
+    if (!q || !q->head) {
+        return;
+    }
+
+    list_ele_t *prev, *cur, *next;
+
+    prev = NULL;
+    cur = q->head;
+    q->tail = q->head;
+
+    while (cur) {
+        next = cur->next;
+        cur->next = prev;
+        prev = cur;
+        cur = next;
+    }
+
+    q->head = prev;
 }
 
 /*
@@ -109,4 +191,41 @@ void q_sort(queue_t *q)
 {
     /* TODO: You need to write the code for this function */
     /* TODO: Remove the above comment when you are about to implement. */
+}
+
+/*
+ * Allocate node space for given string.
+ * Return NULL if s is NULL, empty string
+ * or could not allocate space.
+ * Otherwise, return the address of the allocated node.
+ */
+list_ele_t *q_allocate_node(char *s)
+{
+    if (!s) {
+        return NULL;
+    }
+
+    size_t s_len = strlen(s) + 1;
+
+    if (s_len == 1) {
+        return NULL;
+    }
+
+    list_ele_t *node = malloc(sizeof(list_ele_t));
+
+    if (!node) {
+        return NULL;
+    }
+
+    node->next = NULL;
+    node->value = malloc(s_len);
+
+    if (!node->value) {
+        free(node);
+        return NULL;
+    }
+
+    memcpy(node->value, s, s_len);
+
+    return node;
 }
