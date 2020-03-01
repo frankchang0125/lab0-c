@@ -189,8 +189,21 @@ void q_reverse(queue_t *q)
  */
 void q_sort(queue_t *q)
 {
-    /* TODO: You need to write the code for this function */
-    /* TODO: Remove the above comment when you are about to implement. */
+    if (!q || !q->head) {
+        return;
+    }
+
+    if (q->head == q->tail) {
+        return;
+    }
+
+    q->head = merge_sort(q->head);
+
+    // Update q->tail.
+    q->tail = q->head;
+    while (q->tail && q->tail->next) {
+        q->tail = q->tail->next;
+    }
 }
 
 /*
@@ -228,4 +241,91 @@ list_ele_t *q_allocate_node(char *s)
     memcpy(node->value, s, s_len);
 
     return node;
+}
+
+/*
+ * Performs merge sort to sort the nodes
+ * of given list.
+ */
+list_ele_t *merge_sort(list_ele_t *head)
+{
+    if (!head || !head->next) {
+        return head;
+    }
+
+    /* Use fast/slow pointers to split list
+     * into left and right parts.
+     */
+    list_ele_t *fast = head->next;
+    list_ele_t *slow = head;
+
+    while (fast && fast->next) {
+        fast = fast->next->next;
+        slow = slow->next;
+    }
+
+    list_ele_t *left = head;
+    list_ele_t *right = slow->next;
+    slow->next = NULL;
+
+    /* Perform merge sort on left part and right part lists separately. */
+    left = merge_sort(left);
+    right = merge_sort(right);
+
+    /* Merge the sorted left part and right part lists into one list. */
+    return merge(left, right);
+}
+
+/*
+ * Merge left list and right list into one list,
+ * ordered by the string value of each node in
+ * ascending order.
+ */
+list_ele_t *merge(list_ele_t *left, list_ele_t *right)
+{
+    if (!left) {
+        return right;
+    }
+
+    if (!right) {
+        return left;
+    }
+
+    list_ele_t *result = NULL;
+    list_ele_t *cur = NULL;
+
+    // Initialize, compare left and right list's first node's value
+    // string length, point result to the node with shorter string length
+    // determined by strcasecmp().
+    if (strcasecmp(left->value, right->value) < 1) {
+        result = cur = left;
+        left = left->next;
+    } else {
+        result = cur = right;
+        right = right->next;
+    }
+
+    while (left && right) {
+        if (strcasecmp(left->value, right->value) < 1) {
+            cur->next = left;
+            left = left->next;
+        } else {
+            cur->next = right;
+            right = right->next;
+        }
+
+        cur = cur->next;
+    }
+
+    // Left list has nodes left.
+    if (left) {
+        cur->next = left;
+    }
+
+    // Right list has nodes left.
+    if (right) {
+        cur->next = right;
+    }
+
+    return result;
 }

@@ -101,4 +101,17 @@ void q_sort(queue_t *q);
  */
 list_ele_t *q_allocate_node(char *s);
 
+/*
+ * Performs merge sort to sort the nodes
+ * of given list.
+ */
+list_ele_t *merge_sort(list_ele_t *head);
+
+/*
+ * Merge left list and right list into one list,
+ * ordered by the string value of each node in
+ * ascending order.
+ */
+list_ele_t *merge(list_ele_t *left, list_ele_t *right);
+
 #endif /* LAB0_QUEUE_H */
